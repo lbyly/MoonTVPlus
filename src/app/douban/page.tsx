@@ -75,8 +75,20 @@ function DoubanPageClient() {
     sort: 'T',
   });
 
-  // 星期选择器状态
-  const [selectedWeekday, setSelectedWeekday] = useState<string>('');
+  // 星期选择器状态 - 默认选中今天
+  const getTodayWeekday = (): string => {
+    const today = new Date().getDay();
+    // getDay() 返回 0-6，0 是周日，1-6 是周一到周六
+    const weekdayMap = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    return weekdayMap[today];
+  };
+
+  const [selectedWeekday, setSelectedWeekday] = useState<string>(() => {
+    if (type === 'anime') {
+      return getTodayWeekday();
+    }
+    return '';
+  });
 
   // 获取自定义分类数据
   useEffect(() => {
@@ -146,23 +158,29 @@ function DoubanPageClient() {
           setSecondarySelection(firstCategory.query);
         }
       }
+      setSelectedWeekday(''); // 清空星期选择
     } else {
       // 原有逻辑
       if (type === 'movie') {
         setPrimarySelection('热门');
         setSecondarySelection('全部');
+        setSelectedWeekday(''); // 清空星期选择
       } else if (type === 'tv') {
         setPrimarySelection('最近热门');
         setSecondarySelection('tv');
+        setSelectedWeekday(''); // 清空星期选择
       } else if (type === 'show') {
         setPrimarySelection('最近热门');
         setSecondarySelection('show');
+        setSelectedWeekday(''); // 清空星期选择
       } else if (type === 'anime') {
         setPrimarySelection('每日放送');
         setSecondarySelection('全部');
+        setSelectedWeekday(getTodayWeekday()); // 默认选中今天
       } else {
         setPrimarySelection('');
         setSecondarySelection('全部');
+        setSelectedWeekday(''); // 清空星期选择
       }
     }
 
@@ -623,6 +641,15 @@ function DoubanPageClient() {
             }
           } else {
             setPrimarySelection(value);
+          }
+
+          // 动漫类型：切换到"每日放送"时设置当天，切换到其他分类时清空星期选择
+          if (type === 'anime') {
+            if (value === '每日放送') {
+              setSelectedWeekday(getTodayWeekday());
+            } else {
+              setSelectedWeekday('');
+            }
           }
         }
       }
